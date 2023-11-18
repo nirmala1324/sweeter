@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Profile | SWEETER</title>
+
+    <!-- Meta tags -->
+    <link rel="shortcut icon" href="{{url_for('static', filename='favicon.ico')}}" type="image/x-icon">
+    <meta property="og:title" content="Sweeter - The Sweetest Site | User"/>
+    <meta property="og:description" content="Are you looking for me?"/>
+    <meta property="og:image" content="{{url_for('static', filename='ogimage.jpg')}}"/>
+
+    <!-- Bulma CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css" />
+    <!-- Font Awesome CSS -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+
+    <!-- JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+
+    <!-- GOOGLE fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=Noto+Sans+Old+Permic&family=Noto+Serif+Display:wght@300&family=Noto+Serif:wght@500&family=Pacifico&family=Ubuntu:wght@300&display=swap" rel="stylesheet" />
+
+    <!-- CSS & JS File-->
+    <!-- Importing Style Sheet -->
+    <!-- Needs to be placed below importing bulma css code -->
+    <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}"/>
+    <script src="{{ url_for('static', filename='javascript.js')}}"></script>
+
+    <script>
+
+      // left because it targets the current opened document
+      $(document).ready(function(){
+        get_post("{{user_info.username}}");
+      });
+
+      // signing Out
+      function sign_out(){
+        $.removeCookie('mytoken', {path: '/'});
+        alert('Signed Out!');
+        window.location.href = '/login';
+      }
+
+      // updating user data
+      function update_profile(){
+        let name = $('#input-name').val();
+        let file = $('#input-pic')[0].files[0];
+        let about = $('#textarea-about').val();
+        // FormData is like document in python for inserting data to database I suppose
+        // happen only when we want to add file somewhere in static folder ... I suppose
+        let form_data = new FormData();
+        form_data.append('name_give', name);
+        form_data.append('file_give', file);
+        form_data.append('about_give', about);
+        $.ajax({
+          type: 'POST',
+          url: '/update_profile',
+          data: form_data,
+          cache: false,
+          processData: false,
+          contentType: false,
+          success: function(response){
+            if(response['result'] == 'success'){
+              alert(response['msg']);
+              location.reload(); // Correct method to reload the page
+            }
+          }
+        })
+      }
+
+    </script>
+  </head>
+  <body class="has-navbar-fixed-top">
+    <nav class="navbar is-fixed-top is-white" role="navigation" aria-label="main-navigation">
+      <div class="navbar-brand">
+        <a href="/" class="navbar-item">
+          <img src="{{url_for('static', filename='logo.png')}}"/>
+          <strong class="is-sparta ml-1 logo-text">
+            SWEETER
+          </strong>
+        </a>
+      </div>
+    </nav>
+
+    <section class="hero is-white">
+      <div class="hero-body has-text-centered" style="padding-bottom: 1rem; margin: auto; min-width: 400px; display: flex; flex-direction: column; align-items: center;">
+        <figure class="media-left mb-2" style="align-self: center;">
+          <a href="#" class="image is-96x96">
+            <img src="{{url_for('static', filename=user_info.profile_pic_real)}}" alt="Profile Pic" class="is-rounded">
+          </a>
+        </figure>
+        <div class="media-content">
+          <div class="content">
+            <p>
+              <strong>{{user_info.profile_name}}</strong><small>@{{user_info.username}}</small>
+              <br/>
+              {{user_info.profile_info}} <!--deskripsi singkat user-->
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+        <!-- restrict features shown up when the status is fals -->
+    <!-- only show user that logged in currently -->
+    {% if status %} 
+    <div class="section">
+    <nav id="btns-me" class="level is-mobile" style="margin-top: 2rem;">
+      <a class="button level-item has-text-centered is-sparta" onclick="$('#modal-edit').addClass('is-active')" aria-label="edit">
+        Edit Profile&nbsp;&nbsp;<span class="icon is-small"><i class="fa fa-pencil" aria-hidden="true"></i></span>
+      </a>
+      <div class="modal" id="modal-edit">
+        <div class="modal-background" onclick='$("#modal-edit").removeClass("is-active")'>
+        </div>
+        <div class="modal-content">
+          <div class="box">
+            <article class="media">
+              <div class="media-content">
+                <div class="field">
+                  <label for="input-name" class="label">Name</label>
+                  <p class="control">
+                    <input type="text" id="input-name" class="input" placeholder="Input your name" value="{{user_info.profile_name}}"/>
+                  </p>
+                </div>
+
+                <div class="field">
+                  <label for="input-pic" class="label">Profile Picture</label>
+                  <div class="control is-expanded">
+                    <div class="file has-name">
+                      <label class="file-label" style="width: 100%">
+                        <input
+                          id="input-pic"
+                          class="file-input"
+                          type="file"
+                          name="resume"
+                        />
+                        <span class="file-cta"
+                          ><span class="file-icon"
+                            ><i class="fa fa-upload"></i
+                          ></span>
+                          <span class="file-label">Select a file</span>
+                        </span>
+                        <span
+                          id="file-name"
+                          class="file-name"
+                          style="width: 100%; max-width: 100%"
+                          >{{ user_info.profile_pic }}</span
+                        >
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label for="textarea-about" class="label">Who am I?</label>
+                  <p class="control">
+                    <textarea name="" id="textarea-about" class="textarea" placeholder="Please introduce yourself">{{user_info.profile_info}}</textarea>
+                  </p>
+                </div>
+
+                <nav class="level is-mobile">
+                  <div class="level-left"></div>
+                  <div class="level-right">
+                    <div class="level-item">
+                      <a href="" onclick="update_profile()" class="button is-sparta">Update</a>
+                    </div>
+                    <div class="level-item">
+                      <a
+                        class="button is-sparta is-outlined"
+                        onclick='$("#modal-edit").removeClass("is-active")'
+                        >Cancel</a
+                      >
+                    </div>
+                  </div>
+                </nav>
+              
+
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+      <a class="button level-item has-text-centered is-sparta is-outlined" onclick="sign_out()" aria-label="logout">
+        Sign Out&nbsp;&nbsp;<span class="icon is-small"><i class="fa fa-sign-out" aria-hidden="true"></i></span>
+      </a>
+    </nav>
+  </div>
+    {% endif %}
+
+
+
+    {% if status %}
+    <!-- Posting BOX -->
+    <section class="section">
+      <article class="media">
+        <figure class="media-left" style="align-self: center;">
+          <!-- Fetch property that has been passed by server using . -->
+          <a href="/user/{{user_info.username}}" class="image is-32x32">
+            <!-- Add user profile picture -->
+            <!-- The user has its own default profile picture when the user doesn't have one of their own -->
+<!--ASK THIS-->
+          <img src="{{url_for('static', filename=user_info.profile_pic_real)}}" class="is-rounded">
+          </a>
+        </figure>
+        <div class="media-content">
+          <div class="field">
+            <p class="control">
+              <input 
+                id="input-post"
+                type="text" 
+                class="input is-rounded"
+                placeholder="What are you thinking about?"
+                onclick="$('#modal-post').addClass('is-active')"
+              />
+
+              <div class="modal" id="modal-post">
+                <div class="modal-background" onclick="$('#modal-post').removeClass('is-active')">
+
+                </div>
+                <div class="modal-content">
+                  <div class="box">
+                    <article class="media">
+                      <div class="media-content">
+                        <div class="field">
+                          <p class="control">
+                            <textarea 
+                              class="textarea" 
+                              id="textarea-post"
+                              placeholder="What are you thinking about?"></textarea>
+                          </p>
+                        </div>
+                        <nav class="level is-mobile">
+                          <div class="level-left"></div>
+                          <div class="level-right">
+                            <div class="level-item">
+                              <a href="" class="button is-sparta" onclick="post()">Create Post</a>
+                            </div>
+                            <div class="level-item">
+                              <a href="" class="button is-sparta is-outlined" onclick="$('#modal-post').removeClass('is-active')">Cancel</a>
+                            </div>
+                          </div>
+                        </nav>
+                      </div>
+                    </article>
+                  </div>
+                </div>
+                <button class="modal-close is-large" aria-label="close" onclick="$('#modal-post').removeClass('is-active')"></button>
+              </div>
+
+            </p>
+          </div>
+        </div>
+      </article>
+    </section>
+    {% endif %}
+
+    <!-- .................................................................... -->
+    <section class="section">
+      <div class="container" id="post-box">
+        
+      </div>
+    </section>
+    
+  </body>
+</html>
