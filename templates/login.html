@@ -145,6 +145,11 @@
           },
         });
       }
+      
+      function is_password(asValue) {
+        var regExp = /^(?=.*\d)(?=.*[a-zA-Z])[0-9a-zA-Z!@#$%^&*]{8,20}$/;
+        return regExp.test(asValue);
+      }
 
       function sign_up() {
         let username = $("#input-username").val();
@@ -168,7 +173,7 @@
             .addClass("is-danger");
           $("#input-password").focus();
           return;
-        } else if (is_password(password)) {
+        } else if (!is_password(password)) {
           $("#help-password")
             .text(
               "Please check your password. For your password, please enter 8-20 English characters, numbers, or the following special characters (!@#$%^&*)"
@@ -191,14 +196,14 @@
           $("#input-password2").focus();
           return;
         } else if (password2 !== password) {
-          $("#help-password2")
+          $("#help-password2").toggleClass("is-hidden")
             .text("Your passwords do not match")
             .removeClass("is-safe")
             .addClass("is-danger");
           $("#input-password2").focus();
           return;
         } else {
-          $("#help-password2")
+          $("#help-password2").toggleClass("is-hidden")
             .text("Your passwords match!!!")
             .removeClass("is-danger")
             .addClass("is-success");
@@ -280,40 +285,33 @@
       // For username: 2-10 char long and special char (._-)
       // check for it's validity
       function is_nickname(asValue) {
-        var regExp = /^(?=.*[a-zA-Z])[-a-zA-Z0-9_.]{2,10}$/ // The regular expression - RULE
-        return regExp.test(asValue) // Test the value whether it's valid according to the rule
-      }
-      
-      function is_password(asValue) {
-        var regExp = /^(?=.*\d)(?=.*[a-zA-Z])[0-9a-zA-Z!@#$%^&*]{8,20}$/ // The regular expression - RULE
-        return regExp.test(asValue) // Test the value whether it's valid according to the rule
+        var regExp = /^(?=.*[a-zA-Z])[-a-zA-Z0-9_.]{2,10}$/;
+        return regExp.test(asValue);
       }
       
       // Check whether there is the same username exist in database(?)
       function check_dup() {
-        let inputUsername = $('#input-username')
-        let helpId = $('#help-id')
-        let username = $('#input-username').val()
-      
-        // Handle if the username form is empty
-        if (username === '') {
-          helpId.text('Please enter your ID').removeClass('is-safe').addClass('is-danger')
-          inputUsername.focus()
-          return
+        let username = $("#input-username").val();
+        console.log(username);
+        if (username === "") {
+          $("#help-id")
+            .text("Enter in your id")
+            .removeClass("is-safe")
+            .addClass("is-danger");
+          $("#input-username").focus();
+          return;
         }
-      
-        // Handle if the username input doesn't fulfill the requirement for username
-        // Check if the username is valid or not
-        if (is_nickname(username)) {
-          helpId.text('Please check your ID, please type in 2-10 English characters, numbers, or special characters (._-)').removeClass('is-safe').addClass('is-danger')
-          inputUsername.focus()
-          return
+        if (!is_nickname(username)) {
+          $("#help-id")
+            .text(
+              "Please check your id. For your id, please enter 2-10 English characters, numbers, or the following special characters (._-)"
+            )
+            .removeClass("is-safe")
+            .addClass("is-danger");
+          $("#input-username").focus();
+          return;
         }
-      
-        helpId.addClass('is-loading')
-      
-        // After make sure the username is valid, send request to server
-        // Check whether the same username exists
+        $("#help-id").addClass("is-loading");
         $.ajax({
           type: 'POST',
           url: '/sign_up/check_dup',
@@ -323,17 +321,18 @@
           success: function (response) {
             console.log(response)
             if (response['exists']) {
-              helpId.text('This username is already used').removeClass('is-safe').addClass('is-danger')
+              $("#help-id")
+                .text('This username is already used').removeClass('is-safe').addClass('is-danger')
               inputUsername.focus()
             } else {
-              helpId
+              $("#help-id")
                 .text('This username is avaliable for use!')
                 .removeClass('is-danger') // Red colored text
                 .addClass('is-success') // Green colored text
             }
-            helpId.removeClass('is-loading')
-          }
-        })
+            $("#help-id").removeClass("is-loading");
+          },
+        });
       }
     </script>
   </body>

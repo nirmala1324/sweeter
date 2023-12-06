@@ -177,7 +177,7 @@ def check_dup():
     # Value in variables
     username_receive = request.form.get('username_give')
     # check whether there is duplicate of username in database
-    exists = bool(db.user.find_one({'username': username_receive}))
+    exists = bool(db.users.find_one({'username': username_receive}))
     return jsonify({
         'result': 'success',
         'exists': exists
